@@ -1,0 +1,46 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'spring-boot'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs '../local-repo/'
+    }
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.21'
+
+    testCompile 'junit:junit:4.12'
+
+    compile("org.springframework.boot:spring-boot-starter-web") {
+      exclude module: "spring-boot-starter-tomcat"
+    }
+    compile("org.springframework.boot:spring-boot-starter-jetty")
+
+    compile("org.springframework.boot:spring-boot-starter-data-rest")
+    compile("org.springframework.boot:spring-boot-starter-data-mongodb")
+
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.2'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+
+    compile group: 'org.json', name: 'json', version: '20160810'
+
+    compile group: 'com.google.guava', name: 'guava', version: '19.0'
+
+    compile 'com.github.The-Lando-System:crypt-utils:-SNAPSHOT'
+    compile 'com.github.The-Lando-System:sarlacc-java-client:-SNAPSHOT'
+}
