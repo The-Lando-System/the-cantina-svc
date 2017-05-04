@@ -29,15 +29,15 @@ public class Application {
     @Value("${auth.client.password}")
     private String authClientPassword;
 
-    @Bean
-    public SarlaccUserService sarlaccUserService(){
-        return new SarlaccUserService(authUrlToken,authUrlUser,authClientId,authClientPassword);
-    }
+//    @Bean
+//    public SarlaccUserService sarlaccUserService(){
+//        return new SarlaccUserService(authUrlToken,authUrlUser,authClientId,authClientPassword);
+//    }
 
-    @Bean
-    @Autowired
-    public SarlaccUserFilter sarlaccUserFilter(SarlaccUserService sarlaccUserService){
-        return new SarlaccUserFilter(sarlaccUserService);
-    }
+//    @Bean
+//    @Autowired
+//    public SarlaccUserFilter sarlaccUserFilter(SarlaccUserService sarlaccUserService){
+//        return new SarlaccUserFilter(sarlaccUserService);
+//    }
 
 }

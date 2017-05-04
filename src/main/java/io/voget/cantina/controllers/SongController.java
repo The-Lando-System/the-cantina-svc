@@ -27,13 +27,13 @@ import io.voget.cantina.models.Song;
 @RequestMapping(value="songs", produces= MediaType.APPLICATION_JSON_VALUE)
 public class SongController {
 	
-	@Autowired private SarlaccUserService userSvc;
+	//@Autowired private SarlaccUserService userSvc;
 	
     @RequestMapping(value="/", method= RequestMethod.GET)
     @ResponseBody
-    public Song getSong(@RequestHeader(value=TOKEN_NAME) String accessToken) throws IOException {
+    public Song getSongs(@RequestHeader(value=TOKEN_NAME) String accessToken) throws IOException {
     	
-    	User user = userSvc.getUser(accessToken);
+    	//User user = userSvc.getUser(accessToken);
     	
     	Song s = new Song();
     	s.setId(UUID.randomUUID().toString());
@@ -46,4 +46,11 @@ public class SongController {
     }
 
 
+    @RequestMapping(value="/song", method= RequestMethod.GET)
+    @ResponseBody
+    public byte[] getSong() throws IOException {
+    	return IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("bluten_tea.wav"));
+    }
+
+    
 }
