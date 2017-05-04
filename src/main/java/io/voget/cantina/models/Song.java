@@ -1,7 +1,5 @@
 package io.voget.cantina.models;
 
-import java.io.InputStream;
-
 import org.springframework.data.annotation.Id;
 
 public class Song {

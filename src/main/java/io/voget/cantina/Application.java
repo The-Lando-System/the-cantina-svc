@@ -1,18 +1,19 @@
 package io.voget.cantina;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import com.mattvoget.sarlacc.client.SarlaccUserFilter;
 import com.mattvoget.sarlacc.client.SarlaccUserService;
 
 @SpringBootApplication
 public class Application {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException, IOException {		
         SpringApplication.run(Application.class, args);
     }
 
@@ -29,15 +30,9 @@ public class Application {
     @Value("${auth.client.password}")
     private String authClientPassword;
 
-//    @Bean
-//    public SarlaccUserService sarlaccUserService(){
-//        return new SarlaccUserService(authUrlToken,authUrlUser,authClientId,authClientPassword);
-//    }
-
-//    @Bean
-//    @Autowired
-//    public SarlaccUserFilter sarlaccUserFilter(SarlaccUserService sarlaccUserService){
-//        return new SarlaccUserFilter(sarlaccUserService);
-//    }
+    @Bean
+    public SarlaccUserService sarlaccUserService(){
+        return new SarlaccUserService(authUrlToken,authUrlUser,authClientId,authClientPassword);
+    }
 
 }
