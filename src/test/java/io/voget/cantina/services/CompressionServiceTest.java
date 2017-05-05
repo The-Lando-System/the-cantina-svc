@@ -4,13 +4,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 public class CompressionServiceTest {
 
 	@Test
-	public void testCompressSimpleData() throws IOException {
+	public void testCompressSimpleData() throws IOException, CompressorException {
 		
 		byte[] compressedData = null;
 		
@@ -27,6 +28,11 @@ public class CompressionServiceTest {
 		String compressionRate = (new Integer((int) (100*(((double)inputSize - (double)outputSize) / (double)inputSize)))).toString() + "%";
 		
 		System.out.println("Compression Rate: " + compressionRate);
+		
+		byte[] inflatedData = CompressionService.inflate(compressedData);
+		int inflatedSize = inflatedData.length;
+		
+		System.out.println(String.format("Size after inflation: %d",inflatedSize));
 		
 		assertTrue(true);
 	}
