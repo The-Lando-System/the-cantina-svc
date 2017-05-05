@@ -22,13 +22,12 @@ public class CompressionService {
 		}
 		
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		
 		CompressorOutputStream compressedOut = new CompressorStreamFactory()
 			    .createCompressorOutputStream(algorithm, os);
 	    
 		compressedOut.write(uncompressedData);
 		
-		compressedOut.flush();
+		//compressedOut.flush();
 		compressedOut.close();
 		
 		return os.toByteArray();

@@ -21,7 +21,13 @@ public class CompressionServiceTest {
 		
 		byte[] inputData = IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("bluten_tea.wav"));
 		
-		List<String> algorithms = Arrays.asList(CompressorStreamFactory.GZIP,CompressorStreamFactory.BZIP2,CompressorStreamFactory.XZ);
+		List<String> algorithms = Arrays.asList(
+			CompressorStreamFactory.GZIP,
+			CompressorStreamFactory.BZIP2,
+			CompressorStreamFactory.XZ,
+			CompressorStreamFactory.DEFLATE,
+			CompressorStreamFactory.LZMA
+		);
 
 		for (String alg : algorithms) {
 			testCompressor(alg, inputData);
@@ -43,12 +49,12 @@ public class CompressionServiceTest {
 		
 		long start = (new Date()).getTime();
 		compressedData = CompressionService.compress(inputData,algorithm);
-		long duration = (new Date()).getTime() - start;
+		int duration = (int)(((new Date()).getTime() - start)/1000);
 		
 		int outputSize = compressedData.length;
 		
-		int rate = (int) ((double) outputSize / (double) duration);
-		System.out.println(String.format("Compression Rate: %d bytes/second",rate));
+		int rate = (int) (((double) outputSize / (double) duration)/1000);
+		System.out.println(String.format("Compression Rate: %d Kb/second",rate));
 		
 		System.out.println(String.format("Size after compression: %d",outputSize));
 		
@@ -56,10 +62,10 @@ public class CompressionServiceTest {
 		
 		System.out.println("Percent of Data Compressed: " + compressionRate);
 		
-//		byte[] inflatedData = CompressionService.inflate(compressedData,algorithm);
-//		int inflatedSize = inflatedData.length;
-//		
-//		System.out.println(String.format("Size after inflation: %d",inflatedSize));
+		byte[] inflatedData = CompressionService.inflate(compressedData,algorithm);
+		int inflatedSize = inflatedData.length;
+		
+		System.out.println(String.format("Size after inflation: %d",inflatedSize));
 
 		
 	}
