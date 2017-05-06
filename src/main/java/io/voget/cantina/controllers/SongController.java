@@ -1,6 +1,7 @@
 package io.voget.cantina.controllers;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.compress.compressors.CompressorException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +24,22 @@ public class SongController {
 	
 	@Autowired SongService songSvc;
 	
+    @RequestMapping(value="/", method= RequestMethod.GET)
+    @ResponseBody
+    public List<Song> getSongs() {  
+    	return songSvc.getSongs();
+    }
+	
     @RequestMapping(value="/{songId}", method= RequestMethod.GET)
     @ResponseBody
-    public byte[] getSongDataById(@PathVariable String songId) {  
+    public byte[] getSongDataById(@PathVariable String songId) throws IOException, CompressorException {  
     	return songSvc.getSongDataById(songId);
     }
 
 	@RequestMapping(value="/", method=RequestMethod.POST)
 	@ResponseBody
-	public Song createNewSong(@RequestBody Song newSong) {
-		return songSvc.createNewSong(newSong);
+	public Song createNewSong(@RequestBody Song newSong, byte[] songData) throws CompressorException, IOException {
+		return songSvc.createNewSong(newSong, songData);
 	}
 
     @RequestMapping(value="/load-songs", method= RequestMethod.GET)

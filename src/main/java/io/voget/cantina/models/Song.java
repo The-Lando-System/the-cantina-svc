@@ -7,7 +7,10 @@ public class Song {
 	@Id
 	private String id;
 	private String name;
-	private byte[] data;
+	
+	public Song(String name) {
+		this.name = name;
+	}
 	
 	public String getId() {
 		return id;
@@ -23,14 +26,6 @@ public class Song {
 	
 	public void setName(String name) {
 		this.name = name;
-	}
-	
-	public byte[] getData() {
-		return data;
-	}
-
-	public void setData(byte[] data) {
-		this.data = data;
 	}
 	
 }
