@@ -6,8 +6,8 @@ public class Song {
 	
 	@Id
 	private String id;
-	private byte[] data;
 	private String name;
+	private byte[] data;
 	
 	public String getId() {
 		return id;
@@ -17,20 +17,20 @@ public class Song {
 		this.id = id;
 	}
 	
-	public byte[] getData() {
-		return data;
-	}
-
-	public void setData(byte[] data) {
-		this.data = data;
-	}
-
 	public String getName() {
 		return name;
 	}
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public byte[] getData() {
+		return data;
+	}
+
+	public void setData(byte[] data) {
+		this.data = data;
 	}
 	
 }
