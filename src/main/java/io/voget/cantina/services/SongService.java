@@ -3,6 +3,10 @@ package io.voget.cantina.services;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.io.IOUtils;
@@ -15,6 +19,9 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.mongodb.gridfs.GridFSDBFile;
 
 import io.voget.cantina.models.Song;
@@ -29,6 +36,28 @@ public class SongService {
 	@Autowired CompressionService compSvc;
 	@Autowired GridFsTemplate gridFsTemplate;
 	
+    private LoadingCache<String,byte[]> songCache = CacheBuilder.newBuilder()
+	    .maximumSize(50)
+	    .expireAfterAccess(30, TimeUnit.MINUTES)
+	    .build(
+            new CacheLoader<String, byte[]>() {
+                public byte[] load(String songId) throws Exception {
+                	return getSongDataFromDb(songId);
+                }
+            }
+	    );
+
+	@PostConstruct
+	public void initSongs() {
+		for (Song song : getSongs()) {
+			try {
+				songCache.get(song.getId());
+			} catch (ExecutionException e) {
+				log.error(String.format("Failed to get song with ID [%s]",song.getId()),e);
+			}
+		}
+	}
+	
 	public List<Song> getSongs() {
 		
 		if (log.isDebugEnabled()){
@@ -37,17 +66,7 @@ public class SongService {
 		
 		return songRepo.findAll();
 	}
-	
-	public byte[] getSongDataById(String songId) throws IOException, CompressorException{
 		
-		if (log.isDebugEnabled()){
-			log.debug(String.format("Finding song by ID [%s]",songId));
-		}
-		
-		GridFSDBFile gridFsdbFile = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(songId)));		
-		return compSvc.inflate(IOUtils.toByteArray(gridFsdbFile.getInputStream()), CompressionType.LZMA);
-	}
-	
 	@Transactional
 	public Song createNewSong(Song newSong, byte[] songData) throws CompressorException, IOException{
 		if (log.isDebugEnabled()){
@@ -106,5 +125,25 @@ public class SongService {
 		}
     	
 	}
+	
+	public byte[] getSongDataById(String songId) throws ExecutionException {
+		
+		if (log.isDebugEnabled()){
+			log.debug(String.format("Getting song data for song with ID [%s]",songId));
+		}
+		
+		return songCache.get(songId);
+	}
+	
+	private byte[] getSongDataFromDb(String songId) throws IOException, CompressorException{
+		
+		if (log.isDebugEnabled()){
+			log.debug(String.format("Retrieving song from DB with ID [%s]",songId));
+		}
+		
+		GridFSDBFile gridFsdbFile = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(songId)));		
+		return compSvc.inflate(IOUtils.toByteArray(gridFsdbFile.getInputStream()), CompressionType.LZMA);
+	}
+
 	
 }

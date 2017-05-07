@@ -2,6 +2,7 @@ package io.voget.cantina.controllers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.compress.compressors.CompressorException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class SongController {
 	
     @RequestMapping(value="/{songId}", method= RequestMethod.GET)
     @ResponseBody
-    public byte[] getSongDataById(@PathVariable String songId) throws IOException, CompressorException {  
+    public byte[] getSongDataById(@PathVariable String songId) throws ExecutionException {  
     	return songSvc.getSongDataById(songId);
     }
 
