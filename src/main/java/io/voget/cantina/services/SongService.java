@@ -2,9 +2,10 @@ package io.voget.cantina.services;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -19,9 +20,6 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.mongodb.gridfs.GridFSDBFile;
 
 import io.voget.cantina.models.Song;
@@ -35,26 +33,13 @@ public class SongService {
 	@Autowired SongRepo songRepo;
 	@Autowired CompressionService compSvc;
 	@Autowired GridFsTemplate gridFsTemplate;
-	
-    private LoadingCache<String,byte[]> songCache = CacheBuilder.newBuilder()
-	    .maximumSize(50)
-	    .expireAfterAccess(30, TimeUnit.MINUTES)
-	    .build(
-            new CacheLoader<String, byte[]>() {
-                public byte[] load(String songId) throws Exception {
-                	return getSongDataFromDb(songId);
-                }
-            }
-	    );
+
+	private Map<String,byte[]> songs = new HashMap<String,byte[]>();
 
 	@PostConstruct
-	public void initSongs() {
+	public void initSongs() throws IOException, CompressorException {
 		for (Song song : getSongs()) {
-			try {
-				songCache.get(song.getId());
-			} catch (ExecutionException e) {
-				log.error(String.format("Failed to get song with ID [%s]",song.getId()),e);
-			}
+			songs.put(song.getId(), getSongDataFromDb(song.getId()));
 		}
 	}
 	
@@ -68,71 +53,34 @@ public class SongService {
 	}
 		
 	@Transactional
-	public Song createNewSong(Song newSong, byte[] songData) throws CompressorException, IOException{
+	public Song createNewSong(String songName, byte[] songData) throws CompressorException, IOException{
 		if (log.isDebugEnabled()){
-			log.debug(String.format("Creating new song with name [%s]",newSong.getName()));
+			log.debug(String.format("Creating new song with name [%s]",songName));
 		}
 		
-		Song savedSong = songRepo.save(newSong);
-
+		Song savedSong = songRepo.save(new Song(songName));
+		
     	gridFsTemplate.store(
     		new ByteArrayInputStream(compSvc.compress(songData, CompressionType.LZMA)),
     		savedSong.getId()
     	);
 		
+    	songs.put(savedSong.getId(), songData);
+    	
+		if (log.isDebugEnabled()){
+			log.debug("Song successfully saved!");
+		}
+    	
 		return savedSong;
 	}
-	
-	@Transactional
-	public void loadSongs() throws CompressorException, IOException{
-    	
-		if (log.isDebugEnabled()){
-			log.debug("Bulk loading songs...");
-		}
 		
-    	gridFsTemplate.store(
-    		new ByteArrayInputStream(compSvc.compress(IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("1. Garbanso.wav")), CompressionType.LZMA)),
-    		songRepo.save(new Song("Garbanso")).getId()
-    	);
-    	
-    	gridFsTemplate.store(
-    		new ByteArrayInputStream(compSvc.compress(IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("2. Smittywerbenjagermanjensen.wav")), CompressionType.LZMA)),
-    		songRepo.save(new Song("Smittywerbenjagermanjensen")).getId()
-    	);
-    	
-    	gridFsTemplate.store(
-    		new ByteArrayInputStream(compSvc.compress(IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("3. One Quarter Portion.wav")), CompressionType.LZMA)),
-    		songRepo.save(new Song("One Quarter Portion")).getId()
-    	);
-
-    	gridFsTemplate.store(
-    		new ByteArrayInputStream(compSvc.compress(IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("4. Why Just This Last Week.wav")), CompressionType.LZMA)),
-    		songRepo.save(new Song("Why Just This Last Week")).getId()
-    	);
-
-    	gridFsTemplate.store(
-    		new ByteArrayInputStream(compSvc.compress(IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("5. It's High Noon.wav")), CompressionType.LZMA)),
-    		songRepo.save(new Song("It's High Noon")).getId()
-    	);
-
-    	gridFsTemplate.store(
-    		new ByteArrayInputStream(compSvc.compress(IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("6. Cal Ripken Sr..wav")), CompressionType.LZMA)),
-    		songRepo.save(new Song("Cal Ripken Sr.")).getId()
-    	);
-
-		if (log.isDebugEnabled()){
-			log.debug("Bulk loading songs - Complete!");
-		}
-    	
-	}
-	
 	public byte[] getSongDataById(String songId) throws ExecutionException {
 		
 		if (log.isDebugEnabled()){
 			log.debug(String.format("Getting song data for song with ID [%s]",songId));
 		}
 		
-		return songCache.get(songId);
+		return songs.get(songId);
 	}
 	
 	private byte[] getSongDataFromDb(String songId) throws IOException, CompressorException{
