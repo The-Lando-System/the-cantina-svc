@@ -63,6 +63,10 @@ public class SongService {
     	
 		return savedSong;
 	}
+	
+	public Song getSongById(String songId) {
+		return songRepo.findOne(songId);
+	}
 		
 	public byte[] getSongDataById(String songId) throws IOException, CompressorException {
 		
@@ -70,7 +74,13 @@ public class SongService {
 			log.debug(String.format("Getting song data for song with ID [%s]",songId));
 		}
 		
-		return getSongDataFromDb(songId);
+		byte[] songData = getSongDataFromDb(songId);
+		
+		if (log.isDebugEnabled()){
+			log.debug("Song data successfully retrieved!");
+		}
+
+		return songData;
 	}
 	
 	@Transactional
