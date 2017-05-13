@@ -5,9 +5,11 @@ public class LoadingStatus {
 	private String songId;
 	private boolean isLoading;
 	private String status;
+	private String clientId;
 	
-	public LoadingStatus(String songId, boolean isLoading, String status) {
+	public LoadingStatus(String songId, String clientId, boolean isLoading, String status) {
 		this.songId = songId;
+		this.clientId = clientId;
 		this.isLoading = isLoading;
 		this.status = status;
 	}
@@ -34,6 +36,14 @@ public class LoadingStatus {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public String getClientId() {
+		return clientId;
+	}
+
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
 	}
 	
 }

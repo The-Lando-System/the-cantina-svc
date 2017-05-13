@@ -42,12 +42,12 @@ public class SongController {
     	return songSvc.getSongById(songId);
     }
 	
-    @RequestMapping(value="/{songId}/song-data", method= RequestMethod.GET)
+    @RequestMapping(value="/{songId}/song-data/{clientId}", method= RequestMethod.GET)
     @ResponseBody
-    public byte[] getSongDataById(@PathVariable String songId) throws IOException, CompressorException {  
-    	websocketMsg.convertAndSend(STATUS_TOPIC,new LoadingStatus(songId, true,"Loading Song..."));
+    public byte[] getSongDataById(@PathVariable String songId, @PathVariable String clientId) throws IOException, CompressorException {  
+    	websocketMsg.convertAndSend(STATUS_TOPIC,new LoadingStatus(songId, clientId, true, "Getting song data..."));
     	byte[] songData = songSvc.getSongDataById(songId);
-    	websocketMsg.convertAndSend(STATUS_TOPIC,new LoadingStatus(songId, false,""));
+    	websocketMsg.convertAndSend(STATUS_TOPIC,new LoadingStatus(songId, clientId, false, ""));
     	return songData;
     }
     
@@ -58,11 +58,11 @@ public class SongController {
     	songSvc.deleteSong(songId);
     }
 
-	@RequestMapping(value="/{songName}", method=RequestMethod.POST, consumes = "multipart/form-data")
+	@RequestMapping(value="/{songName}/{clientId}", method=RequestMethod.POST, consumes = "multipart/form-data")
 	@ResponseBody
-	public Song createNewSong(@PathVariable String songName, @RequestParam("song") MultipartFile songData) throws CompressorException, IOException {
+	public Song createNewSong(@PathVariable String songName, @PathVariable String clientId, @RequestParam("song") MultipartFile songData) throws CompressorException, IOException {
 		Song newSong = songSvc.createNewSong(songName, songData.getBytes());
-		websocketMsg.convertAndSend(STATUS_TOPIC,new LoadingStatus(newSong.getId(), false,""));
+		websocketMsg.convertAndSend(STATUS_TOPIC,new LoadingStatus(newSong.getId(), clientId, false,""));
 		return newSong;
 	}
 
