@@ -2,7 +2,11 @@ package io.voget.cantina.services;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.io.IOUtils;
@@ -30,7 +34,7 @@ public class SongService {
 	@Autowired GridFsTemplate gridFsTemplate;
 
 	// TODO - Holding all songs in memory is expensive...
-	//private Map<String,byte[]> songs = new HashMap<String,byte[]>();
+	private Map<String,byte[]> songs = new HashMap<String,byte[]>();
 
 	
 	// Public Methods ==========================================================
@@ -57,6 +61,8 @@ public class SongService {
     		savedSong.getId()
     	);
 		    	
+    	songs.put(savedSong.getId(), songData);
+    	
 		if (log.isDebugEnabled()){
 			log.debug("Song successfully saved!");
 		}
@@ -74,7 +80,7 @@ public class SongService {
 			log.debug(String.format("Getting song data for song with ID [%s]",songId));
 		}
 		
-		byte[] songData = getSongDataFromDb(songId);
+		byte[] songData = songs.get(songId);//getSongDataFromDb(songId);
 		
 		if (log.isDebugEnabled()){
 			log.debug("Song data successfully retrieved!");
@@ -93,6 +99,8 @@ public class SongService {
 		songRepo.delete(songId);
 		gridFsTemplate.delete(new Query(Criteria.where("filename").is(songId)));
 		
+		songs.remove(songId);
+		
 		if (log.isDebugEnabled()){
 			log.debug("Song successfully deleted!");
 		}
@@ -100,16 +108,16 @@ public class SongService {
 	
 	// Private Helper Methods ==========================================================
 	
-//	@PostConstruct
-//	private void initSongs() throws IOException, CompressorException {
-//		for (Song song : getSongs()) {
-//			songs.put(song.getId(), getSongDataFromDb(song.getId()));
-//		}
-//		
-//		if (log.isDebugEnabled()){
-//			log.debug("Successfully loaded all songs!");
-//		}
-//	}
+	@PostConstruct
+	private void initSongs() throws IOException, CompressorException {
+		for (Song song : getSongs()) {
+			songs.put(song.getId(), getSongDataFromDb(song.getId()));
+		}
+		
+		if (log.isDebugEnabled()){
+			log.debug("Successfully loaded all songs!");
+		}
+	}
 
 	private byte[] getSongDataFromDb(String songId) throws IOException, CompressorException{
 		

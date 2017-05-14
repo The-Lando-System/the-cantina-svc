@@ -17,16 +17,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.voget.cantina.models.LoadingStatus;
 import io.voget.cantina.models.Song;
 import io.voget.cantina.services.SongService;
 
 @Controller
 @RequestMapping(value="songs", produces= MediaType.APPLICATION_JSON_VALUE)
 public class SongController {
-	
-	private static final String STATUS_TOPIC = "/topic/song-status";
-	
+		
 	@Autowired SongService songSvc;
 	@Autowired SimpMessagingTemplate websocketMsg;
 	
@@ -42,13 +39,10 @@ public class SongController {
     	return songSvc.getSongById(songId);
     }
 	
-    @RequestMapping(value="/{songId}/song-data/{clientId}", method= RequestMethod.GET)
+    @RequestMapping(value="/{songId}/song-data", method= RequestMethod.GET)
     @ResponseBody
-    public byte[] getSongDataById(@PathVariable String songId, @PathVariable String clientId) throws IOException, CompressorException {  
-    	websocketMsg.convertAndSend(STATUS_TOPIC,new LoadingStatus(songId, clientId, true, "Getting song data..."));
-    	byte[] songData = songSvc.getSongDataById(songId);
-    	websocketMsg.convertAndSend(STATUS_TOPIC,new LoadingStatus(songId, clientId, false, ""));
-    	return songData;
+    public byte[] getSongDataById(@PathVariable String songId) throws IOException, CompressorException {  
+    	return songSvc.getSongDataById(songId);
     }
     
     @RequestMapping(value="/{songId}", method= RequestMethod.DELETE)
@@ -58,12 +52,10 @@ public class SongController {
     	songSvc.deleteSong(songId);
     }
 
-	@RequestMapping(value="/{songName}/{clientId}", method=RequestMethod.POST, consumes = "multipart/form-data")
+	@RequestMapping(value="/{songName}", method=RequestMethod.POST, consumes = "multipart/form-data")
 	@ResponseBody
-	public Song createNewSong(@PathVariable String songName, @PathVariable String clientId, @RequestParam("song") MultipartFile songData) throws CompressorException, IOException {
-		Song newSong = songSvc.createNewSong(songName, songData.getBytes());
-		websocketMsg.convertAndSend(STATUS_TOPIC,new LoadingStatus(newSong.getId(), clientId, false,""));
-		return newSong;
+	public Song createNewSong(@PathVariable String songName, @RequestParam("song") MultipartFile songData) throws CompressorException, IOException {
+		return songSvc.createNewSong(songName, songData.getBytes());
 	}
 
     
