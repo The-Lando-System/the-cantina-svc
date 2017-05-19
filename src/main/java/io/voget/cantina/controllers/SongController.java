@@ -3,11 +3,9 @@ package io.voget.cantina.controllers;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.compress.compressors.CompressorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +23,6 @@ import io.voget.cantina.services.SongService;
 public class SongController {
 		
 	@Autowired SongService songSvc;
-	@Autowired SimpMessagingTemplate websocketMsg;
 	
     @RequestMapping(value="/", method= RequestMethod.GET)
     @ResponseBody
@@ -38,12 +35,6 @@ public class SongController {
     public Song getSongById(@PathVariable String songId) {  
     	return songSvc.getSongById(songId);
     }
-	
-    @RequestMapping(value="/{songId}/song-data", method= RequestMethod.GET)
-    @ResponseBody
-    public byte[] getSongDataById(@PathVariable String songId) throws IOException, CompressorException {  
-    	return songSvc.getSongDataById(songId);
-    }
     
     @RequestMapping(value="/{songId}", method= RequestMethod.DELETE)
     @ResponseBody
@@ -52,11 +43,13 @@ public class SongController {
     	songSvc.deleteSong(songId);
     }
 
-	@RequestMapping(value="/{songName}", method=RequestMethod.POST, consumes = "multipart/form-data")
+	@RequestMapping(value="/", method=RequestMethod.POST, consumes = "multipart/form-data")
 	@ResponseBody
-	public Song createNewSong(@PathVariable String songName, @RequestParam("song") MultipartFile songData) throws CompressorException, IOException {
-		return songSvc.createNewSong(songName, songData.getBytes());
+	public Song createNewSong(
+			@RequestParam("name") String songName,
+			@RequestParam("filename") String songFilename,
+			@RequestParam("song") MultipartFile songData) throws IOException {
+		return songSvc.createNewSong(songName, songFilename, songData.getBytes());
 	}
-
-    
+	
 }

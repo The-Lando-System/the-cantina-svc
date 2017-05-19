@@ -29,6 +29,8 @@ dependencies {
 	compile("org.springframework.boot:spring-boot-starter-websocket")
     compile("org.springframework.boot:spring-boot-starter-data-rest")
     compile("org.springframework.boot:spring-boot-starter-data-mongodb")
+    
+    compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.129'
 
 	compile group: 'commons-collections', name: 'commons-collections', version: '3.2.2'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.2'
