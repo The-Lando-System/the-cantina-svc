@@ -11,6 +11,7 @@ public class Song {
 	private String name;
 	private String url;
 	private String filename;
+	private String artUrl;
 	
 	public Song() {
 		this.id = UUID.randomUUID().toString();
@@ -52,6 +53,14 @@ public class Song {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	public String getArtUrl() {
+		return artUrl;
+	}
+
+	public void setArtUrl(String artUrl) {
+		this.artUrl = artUrl;
 	}
 	
 }

@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +80,32 @@ public class SongService {
 		if (log.isDebugEnabled()){
 			log.debug("Song successfully deleted!");
 		}
+	}
+	
+	@Transactional
+	public Song updateSong(Song songToUpdate) {
+		if (log.isDebugEnabled()){
+			log.debug(String.format("Updating song with ID [%s]", songToUpdate.getId()));
+		}
+		
+		Song song = songRepo.findOne(songToUpdate.getId());
+		if (song == null) {
+			throw new IllegalArgumentException("Could not update song. Failed to find it with the given ID!");
+		}
+		
+		if (StringUtils.isBlank(songToUpdate.getName()))
+			songToUpdate.setName(song.getName());
+		
+		if (StringUtils.isBlank(songToUpdate.getUrl()))
+			songToUpdate.setUrl(song.getUrl());
+		
+		if (StringUtils.isBlank(songToUpdate.getFilename()))
+			songToUpdate.setFilename(song.getFilename());
+		
+		if (StringUtils.isBlank(songToUpdate.getArtUrl()))
+			songToUpdate.setArtUrl(song.getArtUrl());
+
+		return songRepo.save(songToUpdate);
 	}
 	
 }
