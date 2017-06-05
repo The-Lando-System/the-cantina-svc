@@ -19,22 +19,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.mattvoget.sarlacc.client.SarlaccUserException;
-import com.mattvoget.sarlacc.client.SarlaccUserService;
-import com.mattvoget.sarlacc.models.App;
-
 import io.voget.cantina.models.Song;
+import io.voget.cantina.services.SecurityHelper;
 import io.voget.cantina.services.SongService;
 
 @Controller
 @RequestMapping(value="songs", produces= MediaType.APPLICATION_JSON_VALUE)
 public class SongController {
-		
-	@Autowired SarlaccUserService userService;
-	@Autowired App app;
+	
+	@Autowired SecurityHelper securityHelper;
 	
 	@Autowired SongService songSvc;
-	
 	
     @RequestMapping(value="/", method= RequestMethod.GET)
     @ResponseBody
@@ -50,9 +45,9 @@ public class SongController {
     
     @RequestMapping(value="/{songId}", method= RequestMethod.PUT)
     @ResponseBody
-    public Song getSongById(@RequestHeader(value=TOKEN_NAME) String accessToken, @RequestBody Song songToUpdate, @PathVariable String songId) {  
+    public Song editSongById(@RequestHeader(value=TOKEN_NAME) String accessToken, @RequestBody Song songToUpdate, @PathVariable String songId) {  
     	
-    	checkAdmin(accessToken);
+    	securityHelper.checkAdmin(accessToken);
     	
     	return songSvc.updateSong(songToUpdate);
     }
@@ -62,7 +57,7 @@ public class SongController {
     @ResponseStatus(code=HttpStatus.OK)
     public void deleteSong(@RequestHeader(value=TOKEN_NAME) String accessToken, @PathVariable String songId) {  
     	
-    	checkAdmin(accessToken);
+    	securityHelper.checkAdmin(accessToken);
     	
     	songSvc.deleteSong(songId);
     }
@@ -75,14 +70,9 @@ public class SongController {
 			@RequestParam("filename") String songFilename,
 			@RequestParam("song") MultipartFile songData) throws IOException {
 		
-		checkAdmin(accessToken);
+		securityHelper.checkAdmin(accessToken);
 		
 		return songSvc.createNewSong(songName, songFilename, songData.getBytes());
 	}
 	
-	private void checkAdmin(String accessToken) {
-		if (!userService.isUserAdminForApp(accessToken, app)) {
-			throw new SarlaccUserException("User does not have permissions to access this API!");
-		}
-	}
 }
