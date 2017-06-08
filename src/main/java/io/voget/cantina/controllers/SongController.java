@@ -75,4 +75,10 @@ public class SongController {
 		return songSvc.createNewSong(songName, songFilename, songData.getBytes());
 	}
 	
+	@RequestMapping(value="/album/{albumId}", method=RequestMethod.GET)
+	@ResponseBody
+	public List<Song> getSongsByAlbumId(@PathVariable String albumId) {
+		return songSvc.getSongsByAlbumId(albumId);
+	}
+	
 }

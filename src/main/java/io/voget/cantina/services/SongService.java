@@ -2,7 +2,10 @@ package io.voget.cantina.services;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -11,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.voget.cantina.models.Album;
 import io.voget.cantina.models.Song;
+import io.voget.cantina.repos.AlbumRepo;
 import io.voget.cantina.repos.SongRepo;
 
 @Component
@@ -20,6 +25,7 @@ public class SongService {
 	private Logger log = LoggerFactory.getLogger(SongService.class);
 	
 	@Autowired SongRepo songRepo;
+	@Autowired AlbumRepo albumRepo;
 	@Autowired S3Wrapper s3Wrapper;
 
 	// Public Methods ==========================================================
@@ -106,6 +112,51 @@ public class SongService {
 			songToUpdate.setArtUrl(song.getArtUrl());
 
 		return songRepo.save(songToUpdate);
+	}
+	
+	public List<Song> getSongsByAlbumId(String albumId) {
+		if (log.isDebugEnabled()){
+			log.debug(String.format("Retrieving songs belonging to the album with ID [%s]",albumId));
+		}
+
+		if (StringUtils.equals(albumId, "singles")) {
+			return findSingles();
+		}
+		
+		Album album = albumRepo.findOne(albumId);
+		
+		if (album == null) {
+			throw new IllegalArgumentException("Invalid album ID provided!");
+		}
+		
+		if (log.isDebugEnabled()){
+			log.debug(String.format("Found album with name [%s]; Getting the songs",album.getName()));
+		}
+		
+		List<Song> songs = new ArrayList<Song>();
+		
+		for (String songId : album.getSongIds()) {
+			songs.add(songRepo.findOne(songId));
+		}
+		
+		return songs;
+	}
+	
+	private List<Song> findSingles() {
+		
+		Set<String> allAlbumSongIds = new HashSet<String>();
+		for (Album album : albumRepo.findAll()) {
+			allAlbumSongIds.addAll(album.getSongIds());
+		}
+		
+		List<Song> singles = new ArrayList<Song>();		
+		for (Song song : songRepo.findAll()) {
+			if (!allAlbumSongIds.contains(song.getId())){
+				singles.add(song);
+			}
+		}
+		
+		return singles;
 	}
 	
 }
