@@ -3,9 +3,7 @@ package io.voget.cantina.services;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -41,12 +39,12 @@ public class SongService {
 	
 		
 	@Transactional
-	public Song createNewSong(String songName, String filename, byte[] songData) throws IOException{
+	public Song createNewSong(String songName, String filename, String albumId, byte[] songData) throws IOException {
 		if (log.isDebugEnabled()){
 			log.debug(String.format("Creating new song with name [%s]",songName));
 		}
 		
-		Song newSong = new Song(songName,filename);
+		Song newSong = new Song(songName,filename,albumId);
 		String songPath = String.format("songs/%s/%s",newSong.getId(),filename);
 		
 		s3Wrapper.upload(
@@ -110,6 +108,9 @@ public class SongService {
 		
 		if (StringUtils.isBlank(songToUpdate.getArtUrl()))
 			songToUpdate.setArtUrl(song.getArtUrl());
+		
+		if (StringUtils.isBlank(songToUpdate.getAlbumId()))
+			songToUpdate.setAlbumId(song.getAlbumId());
 
 		return songRepo.save(songToUpdate);
 	}
@@ -117,10 +118,6 @@ public class SongService {
 	public List<Song> getSongsByAlbumId(String albumId) {
 		if (log.isDebugEnabled()){
 			log.debug(String.format("Retrieving songs belonging to the album with ID [%s]",albumId));
-		}
-
-		if (StringUtils.equals(albumId, "singles")) {
-			return findSingles();
 		}
 		
 		Album album = albumRepo.findOne(albumId);
@@ -140,23 +137,6 @@ public class SongService {
 		}
 		
 		return songs;
-	}
-	
-	private List<Song> findSingles() {
-		
-		Set<String> allAlbumSongIds = new HashSet<String>();
-		for (Album album : albumRepo.findAll()) {
-			allAlbumSongIds.addAll(album.getSongIds());
-		}
-		
-		List<Song> singles = new ArrayList<Song>();		
-		for (Song song : songRepo.findAll()) {
-			if (!allAlbumSongIds.contains(song.getId())){
-				singles.add(song);
-			}
-		}
-		
-		return singles;
 	}
 	
 }

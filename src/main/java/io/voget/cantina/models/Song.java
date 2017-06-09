@@ -12,15 +12,17 @@ public class Song {
 	private String url;
 	private String filename;
 	private String artUrl;
+	private String albumId;
 	
 	public Song() {
 		this.id = UUID.randomUUID().toString();
 	}
 	
-	public Song(String name, String filename) {
+	public Song(String name, String filename, String albumId) {
 		this();
 		this.name = name;
 		this.filename = filename;
+		this.albumId = albumId;
 	}
 	
 	public String getId() {
@@ -61,6 +63,14 @@ public class Song {
 
 	public void setArtUrl(String artUrl) {
 		this.artUrl = artUrl;
+	}
+
+	public String getAlbumId() {
+		return albumId;
+	}
+
+	public void setAlbumId(String albumId) {
+		this.albumId = albumId;
 	}
 	
 }
