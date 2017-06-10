@@ -68,11 +68,12 @@ public class SongController {
 			@RequestHeader(value=TOKEN_NAME) String accessToken,
 			@RequestParam("name") String songName,
 			@RequestParam("filename") String songFilename,
+			@RequestParam("albumId") String albumId,
 			@RequestParam("song") MultipartFile songData) throws IOException {
 		
 		securityHelper.checkAdmin(accessToken);
 		
-		return songSvc.createNewSong(songName, songFilename, songData.getBytes());
+		return songSvc.createNewSong(songName, songFilename, albumId, songData.getBytes());
 	}
 	
 	@RequestMapping(value="/album/{albumId}", method=RequestMethod.GET)
