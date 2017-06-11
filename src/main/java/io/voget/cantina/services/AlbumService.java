@@ -122,7 +122,7 @@ public class AlbumService {
 		songRepo.save(song);
 		albumRepo.save(album);
 		
-		if (!StringUtils.equals(song.getAlbumId(), albumId)){
+		if (!StringUtils.equals(oldAlbumId, albumId)){
 			removeSongFromAlbum(songId, oldAlbumId);
 		}
 	}
