@@ -25,6 +25,7 @@ public class SongService {
 	@Autowired SongRepo songRepo;
 	@Autowired AlbumRepo albumRepo;
 	@Autowired S3Wrapper s3Wrapper;
+	@Autowired AlbumService albumSvc;
 
 	// Public Methods ==========================================================
 	
@@ -59,6 +60,8 @@ public class SongService {
 		if (log.isDebugEnabled()){
 			log.debug("Song successfully saved!");
 		}
+		
+		albumSvc.addSongToAlbum(savedSong.getId(), savedSong.getAlbumId());
     	
 		return savedSong;
 	}
@@ -80,6 +83,8 @@ public class SongService {
 		s3Wrapper.delete(songKey);
 		
 		songRepo.delete(songId);
+		
+		albumSvc.removeSongFromAlbum(songId, songToDelete.getAlbumId());
 		
 		if (log.isDebugEnabled()){
 			log.debug("Song successfully deleted!");
@@ -109,8 +114,8 @@ public class SongService {
 		if (StringUtils.isBlank(songToUpdate.getArtUrl()))
 			songToUpdate.setArtUrl(song.getArtUrl());
 		
-		if (StringUtils.isBlank(songToUpdate.getAlbumId()))
-			songToUpdate.setAlbumId(song.getAlbumId());
+		// Don't allow song's album to be modified here
+		songToUpdate.setAlbumId(song.getAlbumId());
 
 		return songRepo.save(songToUpdate);
 	}

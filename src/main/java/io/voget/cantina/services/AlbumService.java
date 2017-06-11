@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.voget.cantina.models.Album;
+import io.voget.cantina.models.Song;
 import io.voget.cantina.repos.AlbumRepo;
+import io.voget.cantina.repos.SongRepo;
 
 @Component
 public class AlbumService {
@@ -18,6 +20,7 @@ public class AlbumService {
 	private Logger log = LoggerFactory.getLogger(AlbumService.class);
 	
 	@Autowired AlbumRepo albumRepo;
+	@Autowired SongRepo songRepo;
 	
 	// Public Methods ==========================================================
 	
@@ -93,6 +96,9 @@ public class AlbumService {
 		if (StringUtils.isBlank(albumToUpdate.getDescription()))
 			albumToUpdate.setDescription(album.getDescription());
 		
+		// Don't allow for changes to album's songs to be modified here
+		albumToUpdate.setSongIds(album.getSongIds());
+		
 		return albumRepo.save(albumToUpdate);
 	}
 	
@@ -110,7 +116,15 @@ public class AlbumService {
 
 		album.getSongIds().add(songId);
 	
+		Song song = songRepo.findOne(songId);
+		String oldAlbumId = song.getAlbumId();
+		song.setAlbumId(albumId);
+		songRepo.save(song);
 		albumRepo.save(album);
+		
+		if (!StringUtils.equals(song.getAlbumId(), albumId)){
+			removeSongFromAlbum(songId, oldAlbumId);
+		}
 	}
 	
 	@Transactional
