@@ -1,1 +1,2 @@
 web: java -Dserver.port=$PORT -Dspring.data.mongodb.uri=$MONGO_URI -Dencryption.password=$ENCRYPTION_KEY -Dsarlacc.url=$SARLACC_URL -Dsarlacc.client.id=$CLIENT_ID -Dsarlacc.client.password=$CLIENT_PASSWORD -Dspring.http.multipart.max-file-size=70Mb -Dspring.http.multipart.max-request-size=70Mb -Dacao.origins=$ACAO_ORIGINS -Dcloud.aws.credentials.accessKey=$AWS_ACCESS_KEY -Dcloud.aws.credentials.secretKey=$AWS_SECRET_KEY -Dcloud.aws.region=$AWS_REGION -Dcloud.aws.s3.bucket=$AWS_S3_BUCKET $JAVA_OPTS -jar build/libs/*.jar
+
