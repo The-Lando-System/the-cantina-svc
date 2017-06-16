@@ -130,16 +130,6 @@ public class SongService {
 			log.debug(String.format("Retrieving songs belonging to the album with ID [%s]",albumId));
 		}
 		
-		Album album = albumRepo.findOne(albumId);
-		
-		if (album == null) {
-			throw new IllegalArgumentException("Invalid album ID provided!");
-		}
-		
-		if (log.isDebugEnabled()){
-			log.debug(String.format("Found album with name [%s]; Getting the songs",album.getName()));
-		}
-		
 		return getOrderedSongs(albumId);
 	}
 	
@@ -177,7 +167,7 @@ public class SongService {
 		// Set the default order
 		if (songIds == null) {
 			songIds = new ArrayList<String>();
-			for (Song song : getSongsByAlbumId(albumId)) {
+			for (Song song : retrieveSongsByAlbumId(albumId)) {
 				songIds.add(song.getId());
 			}
 		}
@@ -191,4 +181,24 @@ public class SongService {
 		return songOrderRepo.save(songOrder);
 	}
 	
+	
+	private List<Song> retrieveSongsByAlbumId(String albumId) {
+		Album album = albumRepo.findOne(albumId);
+		
+		if (album == null) {
+			throw new IllegalArgumentException("Invalid album ID provided!");
+		}
+		
+		if (log.isDebugEnabled()){
+			log.debug(String.format("Found album with name [%s]; Getting the songs",album.getName()));
+		}
+		
+		List<Song> songs = new ArrayList<Song>();
+		
+		for (String songId : album.getSongIds()) {
+			songs.add(songRepo.findOne(songId));
+		}
+		
+		return songs;
+	}
 }
