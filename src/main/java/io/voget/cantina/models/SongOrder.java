@@ -1,7 +1,6 @@
 package io.voget.cantina.models;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -9,14 +8,12 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.springframework.data.annotation.Id;
 
-public class Album {
+public class SongOrder {
 	
 	@Id
 	private String id;
-	private String name;
-	private String description;
-	private String artUrl;
-	private List<String> songIds;
+	private String albumId;
+	private LinkedHashMap<String, Integer> songOrder;
 	
 	public String getId() {
 		return id;
@@ -26,39 +23,21 @@ public class Album {
 		this.id = id;
 	}
 	
-	public String getName() {
-		return name;
+	
+	public String getAlbumId() {
+		return albumId;
 	}
 	
-	public void setName(String name) {
-		this.name = name;
+	public void setAlbumId(String albumId) {
+		this.albumId = albumId;
 	}
 	
-	public String getDescription() {
-		return description;
-	}
-	
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	
-	public List<String> getSongIds() {
-		if (this.songIds == null){
-			this.songIds = new ArrayList<String>();
-		}
-		return songIds;
-	}
-	
-	public void setSongIds(List<String> songIds) {
-		this.songIds = songIds;
+	public LinkedHashMap<String, Integer> getSongOrder() {
+		return songOrder;
 	}
 
-	public String getArtUrl() {
-		return artUrl;
-	}
-
-	public void setArtUrl(String artUrl) {
-		this.artUrl = artUrl;
+	public void setSongOrder(LinkedHashMap<String, Integer> songOrder) {
+		this.songOrder = songOrder;
 	}
 	
 	@Override
@@ -75,5 +54,5 @@ public class Album {
 	public int hashCode() {
 		return HashCodeBuilder.reflectionHashCode(this);
 	}
-	
+
 }

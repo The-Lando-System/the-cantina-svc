@@ -79,7 +79,16 @@ public class SongController {
 	@RequestMapping(value="/album/{albumId}", method=RequestMethod.GET)
 	@ResponseBody
 	public List<Song> getSongsByAlbumId(@PathVariable String albumId) {
-		return songSvc.getSongsByAlbumId(albumId);
+		return songSvc.getOrderedSongs(albumId);
 	}
+	
+    @RequestMapping(value="/order/{albumId}", method= RequestMethod.POST)
+    @ResponseBody
+    @ResponseStatus(code=HttpStatus.OK)
+    public void setSongOrder(@RequestHeader(value=TOKEN_NAME) String accessToken, @PathVariable String albumId, @RequestBody List<String> songIds) {  
+    	securityHelper.checkAdmin(accessToken);
+    	songSvc.createOrUpdateSongOrder(albumId, songIds);
+    }
+
 	
 }

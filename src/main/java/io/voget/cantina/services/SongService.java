@@ -3,7 +3,9 @@ package io.voget.cantina.services;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -14,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.voget.cantina.models.Album;
 import io.voget.cantina.models.Song;
+import io.voget.cantina.models.SongOrder;
 import io.voget.cantina.repos.AlbumRepo;
+import io.voget.cantina.repos.SongOrderRepo;
 import io.voget.cantina.repos.SongRepo;
 
 @Component
@@ -26,7 +30,8 @@ public class SongService {
 	@Autowired AlbumRepo albumRepo;
 	@Autowired S3Wrapper s3Wrapper;
 	@Autowired AlbumService albumSvc;
-
+	@Autowired SongOrderRepo songOrderRepo;
+	
 	// Public Methods ==========================================================
 	
 	public List<Song> getSongs() {
@@ -135,13 +140,55 @@ public class SongService {
 			log.debug(String.format("Found album with name [%s]; Getting the songs",album.getName()));
 		}
 		
-		List<Song> songs = new ArrayList<Song>();
+		return getOrderedSongs(albumId);
+	}
+	
+	public List<Song> getOrderedSongs(String albumId) {
 		
-		for (String songId : album.getSongIds()) {
-			songs.add(songRepo.findOne(songId));
+		SongOrder songOrder = songOrderRepo.findByAlbumId(albumId);
+		final List<Song> songs = new ArrayList<Song>();
+	
+		// Set a default order
+		if (songOrder == null) {
+			songOrder = createOrUpdateSongOrder(albumId, null);
 		}
 		
+		songOrder.getSongOrder().entrySet().stream()
+	    .sorted(Map.Entry.comparingByValue())
+	    .forEach(entry -> {
+	    	songs.add(songRepo.findOne(entry.getKey()));
+	    });
+
 		return songs;
+	}
+	
+	@Transactional
+	public SongOrder createOrUpdateSongOrder(String albumId, List<String> songIds) {
+		
+		SongOrder songOrder = songOrderRepo.findByAlbumId(albumId);
+		
+		if (songOrder == null) {
+			songOrder = new SongOrder();
+		}
+		
+		songOrder.setAlbumId(albumId);
+		songOrder.setSongOrder(new LinkedHashMap<String,Integer>());
+
+		// Set the default order
+		if (songIds == null) {
+			songIds = new ArrayList<String>();
+			for (Song song : getSongsByAlbumId(albumId)) {
+				songIds.add(song.getId());
+			}
+		}
+		
+		int orderCount = 0;
+		for (String songId : songIds) {
+			songOrder.getSongOrder().put(songId, orderCount);
+			orderCount++;
+		}
+		
+		return songOrderRepo.save(songOrder);
 	}
 	
 }
