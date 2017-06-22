@@ -21,6 +21,7 @@ public class AlbumService {
 	
 	@Autowired AlbumRepo albumRepo;
 	@Autowired SongRepo songRepo;
+	@Autowired SongService songSvc;
 	
 	// Public Methods ==========================================================
 	
@@ -122,6 +123,8 @@ public class AlbumService {
 		songRepo.save(song);
 		albumRepo.save(album);
 		
+		songSvc.updateSongOrderByAlbumId(album.getId());
+		
 		if (!StringUtils.equals(oldAlbumId, albumId)){
 			removeSongFromAlbum(songId, oldAlbumId);
 		}
@@ -153,5 +156,7 @@ public class AlbumService {
 		
 		album.getSongIds().remove(songIndex);
 		albumRepo.save(album);
+		
+		songSvc.updateSongOrderByAlbumId(album.getId());
 	}
 }

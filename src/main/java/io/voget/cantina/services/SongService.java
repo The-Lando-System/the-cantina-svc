@@ -68,15 +68,18 @@ public class SongService {
 		
 		albumSvc.addSongToAlbum(savedSong.getId(), savedSong.getAlbumId());
     	
-		
-		List<String> songIds = new ArrayList<String>();
-		for (Song song : getSongsByAlbumId(savedSong.getAlbumId())) {
-			songIds.add(song.getId());
-		}
-		
-		createOrUpdateSongOrder(savedSong.getAlbumId(), songIds);
+		updateSongOrderByAlbumId(savedSong.getAlbumId());
 		
 		return savedSong;
+	}
+	
+	public void updateSongOrderByAlbumId(String albumId) {
+		List<String> songIds = new ArrayList<String>();
+		for (Song s : getSongsByAlbumId(albumId)) {
+			songIds.add(s.getId());
+		}
+		
+		createOrUpdateSongOrder(albumId, songIds);
 	}
 	
 	public Song getSongById(String songId) {
@@ -98,6 +101,8 @@ public class SongService {
 		songRepo.delete(songId);
 		
 		albumSvc.removeSongFromAlbum(songId, songToDelete.getAlbumId());
+		
+		updateSongOrderByAlbumId(songToDelete.getAlbumId());
 		
 		if (log.isDebugEnabled()){
 			log.debug("Song successfully deleted!");
