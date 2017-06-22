@@ -68,6 +68,14 @@ public class SongService {
 		
 		albumSvc.addSongToAlbum(savedSong.getId(), savedSong.getAlbumId());
     	
+		
+		List<String> songIds = new ArrayList<String>();
+		for (Song song : getSongsByAlbumId(savedSong.getAlbumId())) {
+			songIds.add(song.getId());
+		}
+		
+		createOrUpdateSongOrder(savedSong.getAlbumId(), songIds);
+		
 		return savedSong;
 	}
 	
