@@ -68,18 +68,15 @@ public class SongService {
 		
 		albumSvc.addSongToAlbum(savedSong.getId(), savedSong.getAlbumId());
     	
+		
+		
 		updateSongOrderByAlbumId(savedSong.getAlbumId());
 		
 		return savedSong;
 	}
 	
 	public void updateSongOrderByAlbumId(String albumId) {
-		List<String> songIds = new ArrayList<String>();
-		for (Song s : getSongsByAlbumId(albumId)) {
-			songIds.add(s.getId());
-		}
-		
-		createOrUpdateSongOrder(albumId, songIds);
+		createOrUpdateSongOrder(albumId, albumRepo.findOne(albumId).getSongIds());
 	}
 	
 	public Song getSongById(String songId) {
@@ -153,7 +150,7 @@ public class SongService {
 	
 		// Set a default order
 		if (songOrder == null) {
-			songOrder = createOrUpdateSongOrder(albumId, null);
+			songOrder = createOrUpdateSongOrder(albumId, albumRepo.findOne(albumId).getSongIds());
 		}
 		
 		songOrder.getSongOrder().entrySet().stream()
@@ -176,14 +173,6 @@ public class SongService {
 		
 		songOrder.setAlbumId(albumId);
 		songOrder.setSongOrder(new LinkedHashMap<String,Integer>());
-
-		// Set the default order
-		if (songIds == null) {
-			songIds = new ArrayList<String>();
-			for (Song song : retrieveSongsByAlbumId(albumId)) {
-				songIds.add(song.getId());
-			}
-		}
 		
 		int orderCount = 0;
 		for (String songId : songIds) {
