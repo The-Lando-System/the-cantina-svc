@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.voget.cantina.models.PlayCount;
 import io.voget.cantina.models.Song;
+import io.voget.cantina.services.PlayCountService;
 import io.voget.cantina.services.SecurityHelper;
 import io.voget.cantina.services.SongService;
 
@@ -27,9 +29,9 @@ import io.voget.cantina.services.SongService;
 @RequestMapping(value="songs", produces= MediaType.APPLICATION_JSON_VALUE)
 public class SongController {
 	
-	@Autowired SecurityHelper securityHelper;
-	
-	@Autowired SongService songSvc;
+	@Autowired private SecurityHelper securityHelper;
+	@Autowired private SongService songSvc;
+	@Autowired private PlayCountService playCountSvc;
 	
     @RequestMapping(value="/", method= RequestMethod.GET)
     @ResponseBody
@@ -53,7 +55,6 @@ public class SongController {
     }
     
     @RequestMapping(value="/{songId}", method= RequestMethod.DELETE)
-    @ResponseBody
     @ResponseStatus(code=HttpStatus.OK)
     public void deleteSong(@RequestHeader(value=TOKEN_NAME) String accessToken, @PathVariable String songId) {  
     	
@@ -83,12 +84,23 @@ public class SongController {
 	}
 	
     @RequestMapping(value="/order/{albumId}", method= RequestMethod.POST)
-    @ResponseBody
     @ResponseStatus(code=HttpStatus.OK)
     public void setSongOrder(@RequestHeader(value=TOKEN_NAME) String accessToken, @PathVariable String albumId, @RequestBody List<String> songIds) {  
     	securityHelper.checkAdmin(accessToken);
     	songSvc.createOrUpdateSongOrder(albumId, songIds);
     }
 
+    @RequestMapping(value="/count/{songId}", method= RequestMethod.POST)
+    @ResponseStatus(code=HttpStatus.OK)
+    public void incrementPlayCount(@PathVariable String songId) {  
+    	playCountSvc.increasePlayCountOnSong(songId);
+    }
+    
+    @RequestMapping(value="/count/{songId}", method= RequestMethod.GET)
+    @ResponseBody
+    @ResponseStatus(code=HttpStatus.OK)
+    public PlayCount getPlayCount(@PathVariable String songId) {  
+    	return playCountSvc.getPlayCountForSong(songId);
+    }
 	
 }
